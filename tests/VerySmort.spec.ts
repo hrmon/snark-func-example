@@ -44,42 +44,33 @@ describe('VerySmort', () => {
         // blockchain and verySmort are ready to use
     });
 
-    it('should increase counter', async () => {
-        const increaseTimes = 3;
-        for (let i = 0; i < increaseTimes; i++) {
-            console.log(`increase ${i + 1}/${increaseTimes}`);
-
-            const increaser = await blockchain.treasury('increaser' + i);
-
-            const counterBefore = await verySmort.getCounter();
-
-            console.log('counter before increasing', counterBefore);
-
-            const increaseBy = Math.floor(Math.random() * 100);
-
-            console.log('increasing by', increaseBy);
-
-            const increaseResult = await verySmort.sendIncrease(increaser.getSender(), {
-                increaseBy,
-                value: toNano('0.05'),
-            });
-
-            expect(increaseResult.transactions).toHaveTransaction({
-                from: increaser.address,
-                to: verySmort.address,
-                success: true,
-            });
-
-            const counterAfter = await verySmort.getCounter();
-
-            console.log('counter after increasing', counterAfter);
-
-            expect(counterAfter).toBe(counterBefore + increaseBy);
-        }
-    });
 
     it('should has global id', async () => {
-        const gid = await verySmort.getGlobalID();
+        const p_a = "a9572cd434dfd77a84c93a8fa9b5eb1a9354aedabcde54a9e14f21a69a2d8093d9d4f8b1c8e6a98bf4f771108905f04a";
+        const p_b = "b04f321aa3bc57468a56e07c04df38d330d471322dd558bfbe8bf028fc830a2313346d98383801caa0f7c5a57f2dd6a70177b38604174595366b6e9dff66282cc808f3fd3b5b9be5033066fae5a55089d4170ce66d241e5fa60dd0a76a901ad5";
+        const p_c = "817304b348e3e75821fe378acd76dbdc3812ca801d547eb66d6a59685e102b32783da00d7bfeac2821ed2b7c7cd0b104";
+        
+        const gid = await verySmort.getGlobalID(p_a, p_b, p_c, [33]);
+        console.log(gid);
+        expect(gid).toBe(-1);
+    });
+
+    it('should not verify incorrect target', async () => {
+        const p_a = "a9572cd434dfd77a84c93a8fa9b5eb1a9354aedabcde54a9e14f21a69a2d8093d9d4f8b1c8e6a98bf4f771108905f04a";
+        const p_b = "b04f321aa3bc57468a56e07c04df38d330d471322dd558bfbe8bf028fc830a2313346d98383801caa0f7c5a57f2dd6a70177b38604174595366b6e9dff66282cc808f3fd3b5b9be5033066fae5a55089d4170ce66d241e5fa60dd0a76a901ad5";
+        const p_c = "817304b348e3e75821fe378acd76dbdc3812ca801d547eb66d6a59685e102b32783da00d7bfeac2821ed2b7c7cd0b104";
+        
+        const gid = await verySmort.getGlobalID(p_a, p_b, p_c, [34]);
+        console.log(gid);
+        expect(gid).toBe(0);
+    });
+
+    it('should not verify incorrect proof', async () => {
+        const p_a = "b08c08befbf81e294a4d0a277ef1e12164b9efefeb0ae9f58931dc5f2d8e162d109fda76c59f89d30d5f4a7b842d301b";
+        const p_b = "b04f321aa3bc57468a56e07c04df38d330d471322dd558bfbe8bf028fc830a2313346d98383801caa0f7c5a57f2dd6a70177b38604174595366b6e9dff66282cc808f3fd3b5b9be5033066fae5a55089d4170ce66d241e5fa60dd0a76a901ad5";
+        const p_c = "817304b348e3e75821fe378acd76dbdc3812ca801d547eb66d6a59685e102b32783da00d7bfeac2821ed2b7c7cd0b104";
+        
+        const gid = await verySmort.getGlobalID(p_a, p_b, p_c, [33]);
         console.log(gid);
         expect(gid).toBe(0);
     });

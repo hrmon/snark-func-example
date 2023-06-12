@@ -1,4 +1,4 @@
-import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender, SendMode } from 'ton-core';
+import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender, SendMode, TupleBuilder, Builder } from 'ton-core';
 
 export type VerySmortConfig = {
     id: number;
@@ -64,8 +64,44 @@ export class VerySmort implements Contract {
         return result.stack.readNumber();
     }
 
-    async getGlobalID(provider: ContractProvider) {
-        const result = await provider.get('go_global', []);
+    async getGlobalID(provider: ContractProvider, pA: string, pB: string, pC: string, publicSignals: number[]) {
+        const publicSignalsTuple = new TupleBuilder();
+        publicSignals.forEach(item => publicSignalsTuple.writeNumber(item));
+        const args = new TupleBuilder();
+        [pA, pB, pC].forEach(item => {
+            const builder = beginCell();
+            writeStringHex(item, builder);
+            args.writeSlice(builder.asSlice());
+        });
+        args.writeTuple(publicSignalsTuple.build());
+        const result = await provider.get('verify_proof', args.build());
         return result.stack.readNumber();
+        // const result = await provider.get('go_global', []);
+        // return result.stack.readNumber();
+    }
+
+    // async verifyProof(provider: ContractProvider, pA: string, pB: string, pC: string, publicSignals: number[]) {
+        
+    // }
+}
+
+function writeStringHex(src: string, builder: Builder) {
+    const buff = Buffer.from(src, "hex");
+    writeBuffer(buff, builder);
+
+    function writeBuffer(src: Buffer, builder: Builder) {
+        if (src.length > 0) {
+            let bytes = Math.floor(builder.availableBits / 8);
+            if (src.length > bytes) {
+                let a = src.subarray(0, bytes);
+                let t = src.subarray(bytes);
+                builder = builder.storeBuffer(a);
+                let bb = beginCell();
+                writeBuffer(t, bb);
+                builder = builder.storeRef(bb.endCell());
+            } else {
+                builder = builder.storeBuffer(src);
+            }
+        }
     }
 }

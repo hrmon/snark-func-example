@@ -1,87 +1,37 @@
 #include "imports/stdlib.fc";
 
-const op::increase = "op::increase"c; ;; create an opcode from string using the "c" prefix, this results in 0x7e8764ef opcode in this case
-;; int get_gid() asm "GLOBALID";
-int tuple_length(tuple t) asm "TLEN";
-int glob() asm "GLOBALID";
-int gasc() asm "GASCONSUMED";
-forall X -> int cast_to_int(X x) asm "NOP";
+slice bls_g1_multiexp(slice x_1, int s_1, int n) asm "BLS_G1_MULTIEXP";
+slice bls_g1_mul(slice x, int s) asm "BLS_G1_MUL";
+slice bls_g1_add(slice x, slice y) asm "BLS_G1_ADD";
+slice bls_g1_neg(slice x) asm "BLS_G1_NEG";
+int bls_g1_ingroup(slice x) asm "BLS_G1_INGROUP";
+int bls_g1_iszero(slice x) asm "BLS_G1_ISZERO";
+slice bls_g1_zero() asm "BLS_G1_ZERO";
+int bls_paireq(slice x_1, slice y_1, slice x_2, slice y_2, slice x_3, slice y_3, slice x_4, slice y_4, int n) asm "BLS_PAIRING";
 
-;; storage variables
+const slice alpha  = "b73ed6ff7ad3b19bb42452a7b068b9596059e5a6b6bd616a88a76dbdf127c3216db113c4db7efe939025350ebbd1f44c"s;
+const slice beta  = "86701f7b15a9bf29de2fd7cbcb78aa2868520bad305f829b335aba279df2f5a66dfc5f6da124a3b2b84584f63aedd792159e789827a0573536f7eb386c1e2c9b0cefeaf8389114a616eefd429256269fdaa245373c28d3f196c91ce699057339"s;
+const slice gamma = "93e02b6052719f607dacd3a088274f65596bd0d09920b61ab5da61bbdc7f5049334cf11213945d57e5ac7d055d042b7e024aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326a805bbefd48056c8c121bdb8"s;
+const slice delta = "a2ab34f50bd86bd263cb8f53e57bd29f2ca4cd94efcc845889fd726998e1153225f75c4bf2dad0c314f615effe976736116ab0ef04f1e837d9ab682f4d37e28c9e4a8154424be26ccd58b35200684231903595bece7ed5e6a246d331e9646180"s;
 
-;; id is required to be able to create different instances of counters
-;; since addresses in TON depend on the initial state of the contract
-global int ctx_id;
-global int ctx_counter;
+const slice IC0 = "90647f22d0a4414cee3403066a48a3fa1f4a28616765640488e68e28fdaea5b714654ec94ea1388e8bdf2794b1325b3b"s;
+const slice IC1 = "b08c08befbf81e294a4d0a277ef1e12164b9efefeb0ae9f58931dc5f2d8e162d109fda76c59f89d30d5f4a7b842d301b"s;
 
-;; load_data populates storage variables using stored data
-() load_data() impure {
-    var ds = get_data().begin_parse();
 
-    ctx_id = ds~load_uint(32);
-    ctx_counter = ds~load_uint(32);
-
-    ds.end_parse();
-}
-
-;; save_data stores storage variables as a cell into persistent storage
-() save_data() impure {
-    set_data(
-        begin_cell()
-            .store_uint(ctx_id, 32)
-            .store_uint(ctx_counter, 32)
-            .end_cell()
-    );
-}
-
-;; recv_internal is the main function of the contract and is called when it receives a message from other contracts
 () recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
-    if (in_msg_body.slice_empty?()) { ;; ignore all empty messages
-        return ();
-    }
 
-    slice cs = in_msg_full.begin_parse();
-    int flags = cs~load_uint(4);
-    if (flags & 1) { ;; ignore all bounced messages
-        return ();
-    }
-
-    load_data(); ;; here we populate the storage variables
-
-    int op = in_msg_body~load_uint(32); ;; by convention, the first 32 bits of incoming message is the op
-    int query_id = in_msg_body~load_uint(64); ;; also by convention, the next 64 bits contain the "query id", although this is not always the case
-
-    ;; var gg = gasc();
-    ;; var gi = glob();
-    slice x = "17"s;
-    int y = x~load_uint(8);
-    y~dump();
-
-
-    if (op == op::increase) {
-        int increase_by = in_msg_body~load_uint(32);
-        ctx_counter += increase_by;
-        save_data();
-        return ();
-    }
-
-    throw(0xffff); ;; if the message contains an op that is not known to this contract, we throw
 }
 
-;; get methods are a means to conveniently read contract data using, for example, HTTP APIs
-;; they are marked with method_id
-;; note that unlike in many other smart contract VMs, get methods cannot be called by other contracts
 
-int get_counter() method_id {
-    load_data();
-    return ctx_counter;
-}
-
-int get_id() method_id {
-    load_data();
-    return ctx_id;
-}
-
-int go_global() method_id {
-    return glob();
+int verify_proof(slice p_a, slice p_b, slice p_c, tuple pub_signals) method_id {
+    int pus1 = pub_signals.first();
+    var cpub = bls_g1_multiexp(
+        IC1, pus1,
+        1
+    );
+    pus1~dump();
+    cpub = bls_g1_add(cpub, IC0);
+    var np_a = bls_g1_neg(p_a);
+    var res = bls_paireq(np_a , p_b, cpub , gamma, p_c , delta, alpha, beta, 4);
+    return res;
 }
