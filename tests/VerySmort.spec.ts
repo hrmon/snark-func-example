@@ -45,7 +45,7 @@ describe('VerySmort', () => {
     });
 
 
-    it('should has global id', async () => {
+    it('should verify correct proof', async () => {
         const p_a = "a9572cd434dfd77a84c93a8fa9b5eb1a9354aedabcde54a9e14f21a69a2d8093d9d4f8b1c8e6a98bf4f771108905f04a";
         const p_b = "b04f321aa3bc57468a56e07c04df38d330d471322dd558bfbe8bf028fc830a2313346d98383801caa0f7c5a57f2dd6a70177b38604174595366b6e9dff66282cc808f3fd3b5b9be5033066fae5a55089d4170ce66d241e5fa60dd0a76a901ad5";
         const p_c = "817304b348e3e75821fe378acd76dbdc3812ca801d547eb66d6a59685e102b32783da00d7bfeac2821ed2b7c7cd0b104";

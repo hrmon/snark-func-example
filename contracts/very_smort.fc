@@ -1,3 +1,23 @@
+{- SPDX-License-Identifier: GPL-3.0
+
+    Copyright 2021 0KIMS association.
+
+    This file is generated with [snarkJS](https://github.com/iden3/snarkjs).
+
+    snarkJS is a free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    snarkJS is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+    License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with snarkJS. If not, see <https://www.gnu.org/licenses/>.
+-}
+
 #include "imports/stdlib.fc";
 
 slice bls_g1_multiexp(slice x_1, int s_1, int n) asm "BLS_G1_MULTIEXP";
@@ -14,7 +34,9 @@ const slice beta  = "86701f7b15a9bf29de2fd7cbcb78aa2868520bad305f829b335aba279df
 const slice gamma = "93e02b6052719f607dacd3a088274f65596bd0d09920b61ab5da61bbdc7f5049334cf11213945d57e5ac7d055d042b7e024aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326a805bbefd48056c8c121bdb8"s;
 const slice delta = "a2ab34f50bd86bd263cb8f53e57bd29f2ca4cd94efcc845889fd726998e1153225f75c4bf2dad0c314f615effe976736116ab0ef04f1e837d9ab682f4d37e28c9e4a8154424be26ccd58b35200684231903595bece7ed5e6a246d331e9646180"s;
 
+
 const slice IC0 = "90647f22d0a4414cee3403066a48a3fa1f4a28616765640488e68e28fdaea5b714654ec94ea1388e8bdf2794b1325b3b"s;
+
 const slice IC1 = "b08c08befbf81e294a4d0a277ef1e12164b9efefeb0ae9f58931dc5f2d8e162d109fda76c59f89d30d5f4a7b842d301b"s;
 
 
@@ -24,12 +46,10 @@ const slice IC1 = "b08c08befbf81e294a4d0a277ef1e12164b9efefeb0ae9f58931dc5f2d8e1
 
 
 int verify_proof(slice p_a, slice p_b, slice p_c, tuple pub_signals) method_id {
-    int pus1 = pub_signals.first();
     var cpub = bls_g1_multiexp(
-        IC1, pus1,
+        IC1, pub_signals.at(0), 
         1
     );
-    pus1~dump();
     cpub = bls_g1_add(cpub, IC0);
     var np_a = bls_g1_neg(p_a);
     var res = bls_paireq(np_a , p_b, cpub , gamma, p_c , delta, alpha, beta, 4);
