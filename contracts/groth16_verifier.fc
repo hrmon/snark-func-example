@@ -55,3 +55,4 @@ int verify_proof(slice p_a, slice p_b, slice p_c, tuple pub_signals) method_id {
     var res = bls_paireq(np_a , p_b, cpub , gamma, p_c , delta, alpha, beta, 4);
     return res;
 }
+

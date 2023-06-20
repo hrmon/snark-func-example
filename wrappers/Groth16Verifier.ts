@@ -1,11 +1,11 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender, SendMode, TupleBuilder, Builder } from 'ton-core';
 
-export type VerySmortConfig = {
+export type Groth16VerifierConfig = {
     id: number;
     counter: number;
 };
 
-export function verySmortConfigToCell(config: VerySmortConfig): Cell {
+export function groth16VerifierConfigToCell(config: Groth16VerifierConfig): Cell {
     return beginCell().storeUint(config.id, 32).storeUint(config.counter, 32).endCell();
 }
 
@@ -13,17 +13,17 @@ export const Opcodes = {
     increase: 0x7e8764ef,
 };
 
-export class VerySmort implements Contract {
+export class Groth16Verifier implements Contract {
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {}
 
     static createFromAddress(address: Address) {
-        return new VerySmort(address);
+        return new Groth16Verifier(address);
     }
 
-    static createFromConfig(config: VerySmortConfig, code: Cell, workchain = 0) {
-        const data = verySmortConfigToCell(config);
+    static createFromConfig(config: Groth16VerifierConfig, code: Cell, workchain = 0) {
+        const data = groth16VerifierConfigToCell(config);
         const init = { code, data };
-        return new VerySmort(contractAddress(workchain, init), init);
+        return new Groth16Verifier(contractAddress(workchain, init), init);
     }
 
     async sendDeploy(provider: ContractProvider, via: Sender, value: bigint) {
@@ -64,7 +64,7 @@ export class VerySmort implements Contract {
         return result.stack.readNumber();
     }
 
-    async getGlobalID(provider: ContractProvider, pA: string, pB: string, pC: string, publicSignals: number[]) {
+    async getProofVerification(provider: ContractProvider, pA: string, pB: string, pC: string, publicSignals: number[]) {
         const publicSignalsTuple = new TupleBuilder();
         publicSignals.forEach(item => publicSignalsTuple.writeNumber(item));
         const args = new TupleBuilder();
@@ -76,13 +76,7 @@ export class VerySmort implements Contract {
         args.writeTuple(publicSignalsTuple.build());
         const result = await provider.get('verify_proof', args.build());
         return result.stack.readNumber();
-        // const result = await provider.get('go_global', []);
-        // return result.stack.readNumber();
     }
-
-    // async verifyProof(provider: ContractProvider, pA: string, pB: string, pC: string, publicSignals: number[]) {
-        
-    // }
 }
 
 function writeStringHex(src: string, builder: Builder) {

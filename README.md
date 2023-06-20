@@ -1,4 +1,4 @@
-# smort
+# zkverifier
 
 ## Project structure
 

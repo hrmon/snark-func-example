@@ -1,24 +1,24 @@
 import { Blockchain, SandboxContract } from '@ton-community/sandbox';
 import { Cell, toNano } from 'ton-core';
-import { VerySmort } from '../wrappers/VerySmort';
+import { Groth16Verifier } from '../wrappers/Groth16Verifier';
 import '@ton-community/test-utils';
 import { compile } from '@ton-community/blueprint';
 
-describe('VerySmort', () => {
+describe('Groth16Verifier', () => {
     let code: Cell;
 
     beforeAll(async () => {
-        code = await compile('VerySmort');
+        code = await compile('Groth16Verifier');
     });
 
     let blockchain: Blockchain;
-    let verySmort: SandboxContract<VerySmort>;
+    let groth16Verifier: SandboxContract<Groth16Verifier>;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
 
-        verySmort = blockchain.openContract(
-            VerySmort.createFromConfig(
+        groth16Verifier = blockchain.openContract(
+            Groth16Verifier.createFromConfig(
                 {
                     id: 0,
                     counter: 0,
@@ -29,11 +29,11 @@ describe('VerySmort', () => {
 
         const deployer = await blockchain.treasury('deployer');
 
-        const deployResult = await verySmort.sendDeploy(deployer.getSender(), toNano('0.05'));
+        const deployResult = await groth16Verifier.sendDeploy(deployer.getSender(), toNano('0.05'));
 
         expect(deployResult.transactions).toHaveTransaction({
             from: deployer.address,
-            to: verySmort.address,
+            to: groth16Verifier.address,
             deploy: true,
             success: true,
         });
@@ -41,7 +41,7 @@ describe('VerySmort', () => {
 
     it('should deploy', async () => {
         // the check is done inside beforeEach
-        // blockchain and verySmort are ready to use
+        // blockchain and groth16Verifier are ready to use
     });
 
 
@@ -50,8 +50,7 @@ describe('VerySmort', () => {
         const p_b = "b04f321aa3bc57468a56e07c04df38d330d471322dd558bfbe8bf028fc830a2313346d98383801caa0f7c5a57f2dd6a70177b38604174595366b6e9dff66282cc808f3fd3b5b9be5033066fae5a55089d4170ce66d241e5fa60dd0a76a901ad5";
         const p_c = "817304b348e3e75821fe378acd76dbdc3812ca801d547eb66d6a59685e102b32783da00d7bfeac2821ed2b7c7cd0b104";
         
-        const gid = await verySmort.getGlobalID(p_a, p_b, p_c, [33]);
-        console.log(gid);
+        const gid = await groth16Verifier.getProofVerification(p_a, p_b, p_c, [33]);
         expect(gid).toBe(-1);
     });
 
@@ -60,7 +59,7 @@ describe('VerySmort', () => {
         const p_b = "b04f321aa3bc57468a56e07c04df38d330d471322dd558bfbe8bf028fc830a2313346d98383801caa0f7c5a57f2dd6a70177b38604174595366b6e9dff66282cc808f3fd3b5b9be5033066fae5a55089d4170ce66d241e5fa60dd0a76a901ad5";
         const p_c = "817304b348e3e75821fe378acd76dbdc3812ca801d547eb66d6a59685e102b32783da00d7bfeac2821ed2b7c7cd0b104";
         
-        const gid = await verySmort.getGlobalID(p_a, p_b, p_c, [34]);
+        const gid = await groth16Verifier.getProofVerification(p_a, p_b, p_c, [34]);
         console.log(gid);
         expect(gid).toBe(0);
     });
@@ -70,7 +69,7 @@ describe('VerySmort', () => {
         const p_b = "b04f321aa3bc57468a56e07c04df38d330d471322dd558bfbe8bf028fc830a2313346d98383801caa0f7c5a57f2dd6a70177b38604174595366b6e9dff66282cc808f3fd3b5b9be5033066fae5a55089d4170ce66d241e5fa60dd0a76a901ad5";
         const p_c = "817304b348e3e75821fe378acd76dbdc3812ca801d547eb66d6a59685e102b32783da00d7bfeac2821ed2b7c7cd0b104";
         
-        const gid = await verySmort.getGlobalID(p_a, p_b, p_c, [33]);
+        const gid = await groth16Verifier.getProofVerification(p_a, p_b, p_c, [33]);
         console.log(gid);
         expect(gid).toBe(0);
     });
