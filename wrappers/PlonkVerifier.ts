@@ -27,14 +27,11 @@ export class PlonkVerifier implements Contract {
         });
     }
 
-    async getProofVerification(provider: ContractProvider, proof: TupleItem[], publicSignals: number[]) {
-        const publicSignalsTuple = new TupleBuilder();
-        publicSignals.forEach(item => publicSignalsTuple.writeNumber(item));
+    async getProofVerification(provider: ContractProvider, proof: TupleItem[], publicSignals: TupleItem[]) {
         const args = new TupleBuilder();
         args.writeTuple(proof);
-        args.writeTuple(publicSignalsTuple.build());
+        args.writeTuple(publicSignals);
         const result = await provider.get('verify_proof', args.build());
-        // console.log(result.stack.pop())
         return result.stack.readNumber();
     }
 }

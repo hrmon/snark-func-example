@@ -21,7 +21,9 @@ slice bls_g1_zero() asm "BLS_G1_ZERO";
 int hash_keccak256_12(
     slice s1, slice s2, slice s3, slice s4,
     slice s5, slice s6, slice s7, slice s8,
-    slice s9, slice s10,slice s11, slice s12) asm "12 INT HASHEXT_KECCAK256";
+    slice s9, slice s10, slice s11
+    ,slice s12 
+    ) asm "12 INT HASHEXT_KECCAK256";
 int hash_keccak256_1(slice s1) asm "1 INT HASHEXT_KECCAK256";
 int hash_keccak256_2(slice s1, slice s2) asm "2 INT HASHEXT_KECCAK256";
 int hash_keccak256_3(slice s1, slice s2, slice s3) asm "3 INT HASHEXT_KECCAK256";
@@ -48,17 +50,17 @@ const n         = 8;
 const nPublic   = 1;
 const nLagrange = 1;
 
-const Qm  = "a4f82afed5bcae0a84fd16f3a22f16ca1980415260fbb29057fe74dbbb8defca8fe8a8a1c82a88debb33812618389711"s;
-const Ql  = "a043cfb585015b9d1fb5d350772925f6c370eb06b2d0e199c3021314a42169f1cec15c58e920e4b6500b7a9bdc694c22"s;
-const Qr  = "c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"s;
-const Qo  = "84f82afed5bcae0a84fd16f3a22f16ca1980415260fbb29057fe74dbbb8defca8fe8a8a1c82a88debb33812618389711"s;
-const Qc  = "c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"s;
-const S1  = "b79c83d795d4ecb1aad93c504cab29b993c4958220271920343d794b9e973f3777951ec39a96c15b0a15f3b4e006168b"s;
-const S2  = "b31759c1e1df2dff9d9958a15149eeb1612e211482b54a873ff6265862c530f964978d9c8af680565e53498923d409b2"s;
-const S3  = "8b143a97eea28d3c3a598d5ff2447dbc92aa5b4eae5e37bcb4c828587750129ede91c9dff18d29720ec05d68a5477173"s;
+const Qm = "a4f82afed5bcae0a84fd16f3a22f16ca1980415260fbb29057fe74dbbb8defca8fe8a8a1c82a88debb33812618389711"s;
+const Ql = "a043cfb585015b9d1fb5d350772925f6c370eb06b2d0e199c3021314a42169f1cec15c58e920e4b6500b7a9bdc694c22"s;
+const Qr = "c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"s;
+const Qo = "84f82afed5bcae0a84fd16f3a22f16ca1980415260fbb29057fe74dbbb8defca8fe8a8a1c82a88debb33812618389711"s;
+const Qc = "c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"s;
+const S1 = "b79c83d795d4ecb1aad93c504cab29b993c4958220271920343d794b9e973f3777951ec39a96c15b0a15f3b4e006168b"s;
+const S2 = "b31759c1e1df2dff9d9958a15149eeb1612e211482b54a873ff6265862c530f964978d9c8af680565e53498923d409b2"s;
+const S3 = "8b143a97eea28d3c3a598d5ff2447dbc92aa5b4eae5e37bcb4c828587750129ede91c9dff18d29720ec05d68a5477173"s;
 const X2 = "b55e96b4d3e46f7be4aa1b73fd0453f1794e1249cdb4317a7e689c343a6fac6f388cbf3520c30083d6d67869618b5e8d1405b619dcea02cd1c35e5e092788416e0d35276c850ea0e40fed34f3cc7dfcc1318ec36b1011fa1a9a6fdee1219ec2d"s;
-const k2   = 3;
-const k1   = 2;
+const k2 = 3;
+const k1 = 2;
 
 ;; Proof calldata
 ;; Polynomial commitments
@@ -250,21 +252,34 @@ int calculate_r0(int pPI, tuple pEval_l, tuple proof, tuple challenges) {
 tuple calculate_lagrange(tuple challenges) {
     var w = 1;
     var pEval_l = empty_tuple();
+    
     pEval_l~tpush(mulmodq(n, ((challenges.pXi() - w) + q) % q));
+    
+    
 
     (pEval_l, _) = inverse_array(pEval_l, 1, challenges);
 
     w = 1;
 
     var tmp = empty_tuple();
+    
+    
     tmp~tpush(mulmodq(pEval_l.at(0), challenges.pZh()));
+    
+    
+    
+    ;; tmp~tpush(mulmodq(pEval_l.at(0), challenges.pZh()));
     pEval_l = tmp;
     return pEval_l;
 }
 
 int calculate_pi(tuple public_signals, tuple pEval_l) {
     var pi = 0;
-    pi = (pi - mulmodq(pEval_l.at(0), public_signals.at(0)) + q) % q;
+    var it = 0;
+    repeat(nPublic) {
+        pi = (pi - mulmodq(pEval_l.at(it), public_signals.at(it)) + q) % q;
+        it += 1;
+    }    
     return pi;
 }
 
@@ -287,7 +302,9 @@ tuple calculate_challenges(tuple public_signals, tuple proof) {
         S1,
         S2,
         S3,
+        
         to_256bs(public_signals.at(0)),
+        
         proof.pA(),
         proof.pB(),
         proof.pC()
@@ -334,9 +351,13 @@ tuple calculate_challenges(tuple public_signals, tuple proof) {
     var pBetaXi = mulmodq(challenges.beta(), aux);
 
     ;; xi^n
+    
     aux = mulmodq(aux, aux);
+    
     aux = mulmodq(aux, aux);
+    
     aux = mulmodq(aux, aux);
+    
 
     var xin = aux;
     challenges~tpush(xi);

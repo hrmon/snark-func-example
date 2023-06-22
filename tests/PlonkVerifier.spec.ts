@@ -37,7 +37,7 @@ describe('PlonkVerifier', () => {
     });
 
     it('should verify correct proof', async () => {
-        var proof = new TupleBuilder();
+        const proof = new TupleBuilder();
         proof.writeSlice(hexToSlice("ad59f73341d165c81e7c94137cc0b73b72ad974cdbef66d9c78354ac8e5369648a4577c15f94ddb3aa93414d95740641"));
         proof.writeSlice(hexToSlice("b28f06868ebaabdf45d2ccac5bffc7dd0646a6418301d3b3406c1ac2de3979a55205727caf54d9958bac618b486011a4"));
         proof.writeSlice(hexToSlice("90b72dad4296ec642e45b2f3cde27df32741cc2c0c5b2a0d63b9722693cf710f8b45f25007b950739f553067cb1bd1a1"));
@@ -55,7 +55,11 @@ describe('PlonkVerifier', () => {
         proof.writeNumber(BigInt("25660014378165531169063054088567360357329524460273662113539822485003295447703"));
         proof.writeNumber(BigInt("47269453395694308035624120155650473486695846739267162287515244490130092320602"));
         
-        const gid = await plonkVerifier.getProofVerification(proof.build(), [33]);
+        const publicSignals = new TupleBuilder();
+        
+        publicSignals.writeNumber(33);
+        
+        const gid = await plonkVerifier.getProofVerification(proof.build(), publicSignals.build());
         expect(gid).toBe(-1);
     });
 
@@ -78,7 +82,11 @@ describe('PlonkVerifier', () => {
         proof.writeNumber(BigInt("25660014378165531169063054088567360357329524460273662113539822485003295447703"));
         proof.writeNumber(BigInt("47269453395694308035624120155650473486695846739267162287515244490130092320602"));
         
-        const gid = await plonkVerifier.getProofVerification(proof.build(), [33]);
+        const publicSignals = new TupleBuilder();
+        
+        publicSignals.writeNumber(33);
+        
+        const gid = await plonkVerifier.getProofVerification(proof.build(), publicSignals.build());
         expect(gid).toBe(0);
     });
 
