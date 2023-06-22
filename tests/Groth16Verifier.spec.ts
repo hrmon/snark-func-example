@@ -60,7 +60,6 @@ describe('Groth16Verifier', () => {
         const p_c = "817304b348e3e75821fe378acd76dbdc3812ca801d547eb66d6a59685e102b32783da00d7bfeac2821ed2b7c7cd0b104";
         
         const gid = await groth16Verifier.getProofVerification(p_a, p_b, p_c, [34]);
-        console.log(gid);
         expect(gid).toBe(0);
     });
 
@@ -70,7 +69,6 @@ describe('Groth16Verifier', () => {
         const p_c = "817304b348e3e75821fe378acd76dbdc3812ca801d547eb66d6a59685e102b32783da00d7bfeac2821ed2b7c7cd0b104";
         
         const gid = await groth16Verifier.getProofVerification(p_a, p_b, p_c, [33]);
-        console.log(gid);
         expect(gid).toBe(0);
     });
 });
